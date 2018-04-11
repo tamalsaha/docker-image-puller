@@ -1,0 +1,15 @@
+hash: 492bda913fd273a792562cbdc705d171e4da5b2a5284d977264ab59d853b00b9
+updated: 2018-04-11T00:51:35.440989856-07:00
+imports:
+- name: github.com/docker/distribution
+  version: edc3ab29cdff8694dd6feb85cfeb4b5f1b38ed9c
+  subpackages:
+  - digestset
+  - reference
+- name: github.com/kubernetes/kubernetes
+  version: 925c127ec6b946659ad0fd596fa959be43f0cc05
+  subpackages:
+  - pkg/util/parsers
+- name: github.com/opencontainers/go-digest
+  version: a6d0ee40d4207ea02364bd3b9e8e77b9159ba1eb
+testImports: []
