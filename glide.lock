@@ -1,5 +1,5 @@
 hash: ac5a399a24512cddf1c03dd8df85536eafbdaa0530648abb368db0395715c62e
-updated: 2018-04-22T08:37:03.724988353-07:00
+updated: 2018-04-22T09:17:10.549314105-07:00
 imports:
 - name: cloud.google.com/go
   version: 3b1ae45394a234c385be014e9a488f2bb6eef821
@@ -11,6 +11,50 @@ imports:
   subpackages:
   - context
   - log
+- name: github.com/aws/aws-sdk-go
+  version: 760741802ad40f49ae9fc4a69ef6706d2527d62e
+  subpackages:
+  - aws
+  - aws/awserr
+  - aws/awsutil
+  - aws/client
+  - aws/client/metadata
+  - aws/corehandlers
+  - aws/credentials
+  - aws/credentials/ec2rolecreds
+  - aws/credentials/endpointcreds
+  - aws/credentials/stscreds
+  - aws/defaults
+  - aws/ec2metadata
+  - aws/endpoints
+  - aws/request
+  - aws/session
+  - aws/signer/v4
+  - internal/shareddefaults
+  - private/protocol
+  - private/protocol/ec2query
+  - private/protocol/json/jsonutil
+  - private/protocol/jsonrpc
+  - private/protocol/query
+  - private/protocol/query/queryutil
+  - private/protocol/rest
+  - private/protocol/xml/xmlutil
+  - service/autoscaling
+  - service/ec2
+  - service/ecr
+  - service/elb
+  - service/elbv2
+  - service/kms
+  - service/sts
+- name: github.com/Azure/azure-sdk-for-go
+  version: 509eea43b93cec2f3f17acbe2578ef58703923f8
+  subpackages:
+  - arm/compute
+  - arm/containerregistry
+  - arm/disk
+  - arm/network
+  - arm/storage
+  - storage
 - name: github.com/Azure/go-autorest
   version: e14a70c556c8e0db173358d1a903dca345a8e75e
   subpackages:
@@ -18,6 +62,8 @@ imports:
   - autorest/adal
   - autorest/azure
   - autorest/date
+  - autorest/to
+  - autorest/validation
 - name: github.com/beorn7/perks
   version: 3ac7bf7a47d159a033b107610db8a1b6575507a4
   subpackages:
@@ -72,16 +118,14 @@ imports:
   - tlsconfig
 - name: github.com/docker/go-units
   version: 9e638d38cf6977a37a8ea0078f3ee75a7cdb2dd1
-- name: github.com/docker/spdystream
-  version: 449fdfce4d962303d702fec724ef0ad181c92528
-  subpackages:
-  - spdy
 - name: github.com/emicklei/go-restful
   version: ff4f55a206334ef123e4f79bbf348980da81ca46
   subpackages:
   - log
 - name: github.com/ghodss/yaml
   version: 73d445a93680fa1a78ae23a5839bad48f32ba1ee
+- name: github.com/go-ini/ini
+  version: 300e940a926eb277d3901b20bdfcc54928ad3642
 - name: github.com/go-openapi/jsonpointer
   version: 46af16f9f7b149af66e5d1bd010e3574dc06de98
 - name: github.com/go-openapi/jsonreference
@@ -144,12 +188,12 @@ imports:
   version: bf9dde6d0d2c004a008c27aaee91170c786f6db8
 - name: github.com/imdario/mergo
   version: 6633656539c1639d9d78127b7d47c622b5d7b6dc
+- name: github.com/jmespath/go-jmespath
+  version: 0b12d6b521d83fc7f755e7cfc1b1fbdd35a01a74
 - name: github.com/json-iterator/go
   version: 36b14963da70d11297d313183d7e6388c8510e1e
 - name: github.com/juju/ratelimit
   version: 5b9ff866471762aa2ab2dced63c9fb6f53921342
-- name: github.com/kr/pty
-  version: f7ee69f31298ecbe5d2b349c711e2547a617d398
 - name: github.com/mailru/easyjson
   version: 2f5df55504ebc322e4d52d34df6a1f5b503bf26d
   subpackages:
@@ -194,6 +238,12 @@ imports:
   version: 8a290539e2e8629dbc4e6bad948158f790ec31f4
 - name: github.com/PuerkitoBio/urlesc
   version: 5bd2802263f21d8788851d5305584c82a5c75d7e
+- name: github.com/rubiojr/go-vhd
+  version: 0bfd3b39853cdde5762efda92289f14b0ac0491b
+  subpackages:
+  - vhd
+- name: github.com/satori/uuid
+  version: 5bf94b69c6b68ee1b541973bb8e1144db23a194b
 - name: github.com/spf13/pflag
   version: 9ff6c6923cfffbcd502984b8e0c80539a94968b7
 - name: github.com/tamalsaha/go-oneliners
@@ -201,6 +251,8 @@ imports:
 - name: golang.org/x/crypto
   version: 81e90905daefcd6fd217b62423c0908922eadb30
   subpackages:
+  - pkcs12
+  - pkcs12/internal/rc2
   - ssh/terminal
 - name: golang.org/x/net
   version: 1c05540f6879653db88113bc4a2b70aec4bd491f
@@ -345,13 +397,10 @@ imports:
   - pkg/util/diff
   - pkg/util/errors
   - pkg/util/framer
-  - pkg/util/httpstream
-  - pkg/util/httpstream/spdy
   - pkg/util/intstr
   - pkg/util/json
   - pkg/util/mergepatch
   - pkg/util/net
-  - pkg/util/remotecommand
   - pkg/util/runtime
   - pkg/util/sets
   - pkg/util/strategicpatch
@@ -362,7 +411,6 @@ imports:
   - pkg/version
   - pkg/watch
   - third_party/forked/golang/json
-  - third_party/forked/golang/netutil
   - third_party/forked/golang/reflect
 - name: k8s.io/apiserver
   version: 1270e9f1ad9eaf6127691df90af0836f7e152495
@@ -489,12 +537,9 @@ imports:
   - tools/pager
   - tools/record
   - tools/reference
-  - tools/remotecommand
   - transport
-  - transport/spdy
   - util/buffer
   - util/cert
-  - util/exec
   - util/flowcontrol
   - util/homedir
   - util/integer
@@ -511,6 +556,7 @@ imports:
   - pkg/api/legacyscheme
   - pkg/api/service
   - pkg/api/v1/pod
+  - pkg/api/v1/service
   - pkg/apis/autoscaling
   - pkg/apis/core
   - pkg/apis/core/helper
@@ -523,16 +569,17 @@ imports:
   - pkg/apis/networking
   - pkg/capabilities
   - pkg/cloudprovider
+  - pkg/cloudprovider/providers/azure
   - pkg/controller
   - pkg/credentialprovider
+  - pkg/credentialprovider/aws
+  - pkg/credentialprovider/azure
+  - pkg/credentialprovider/gcp
   - pkg/features
   - pkg/fieldpath
   - pkg/kubelet/apis
   - pkg/kubelet/apis/cri/v1alpha1/runtime
-  - pkg/kubelet/container
   - pkg/kubelet/types
-  - pkg/kubelet/util/format
-  - pkg/kubelet/util/ioutils
   - pkg/security/apparmor
   - pkg/serviceaccount
   - pkg/util/file
@@ -544,9 +591,9 @@ imports:
   - pkg/util/parsers
   - pkg/util/pointer
   - pkg/util/taints
+  - pkg/version
   - pkg/volume
   - pkg/volume/util
-  - third_party/forked/golang/expansion
 - name: k8s.io/utils
   version: aedf551cdb8b0119df3a19c65fde413a13b34997
   subpackages:
