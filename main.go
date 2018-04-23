@@ -24,6 +24,7 @@ import (
 	"k8s.io/kubernetes/pkg/credentialprovider"
 	"k8s.io/kubernetes/pkg/util/parsers"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"net/url"
 )
 
 func main() {
@@ -61,16 +62,16 @@ func main() {
 		}
 	}
 
-	mf1, err := PullImage("nginx", pullSecrets)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	switch manifest := mf1.(type) {
-	case *manifestV2.DeserializedManifest:
-		fmt.Println("nginx", manifest.Config.Digest)
-	case *manifestV1.SignedManifest:
-		fmt.Println("nginx", manifest.Name)
-	}
+	//mf1, err := PullImage("nginx", pullSecrets)
+	//if err != nil {
+	//	log.Fatalln(err)
+	//}
+	//switch manifest := mf1.(type) {
+	//case *manifestV2.DeserializedManifest:
+	//	fmt.Println("nginx", manifest.Config.Digest)
+	//case *manifestV1.SignedManifest:
+	//	fmt.Println("nginx", manifest.Name)
+	//}
 
 	mf2, err := PullImage("k8s.gcr.io/kube-proxy-amd64:v1.10.0", pullSecrets)
 	switch manifest := mf2.(type) {
@@ -95,6 +96,17 @@ func PullImage(img string, pullSecrets []v1.Secret) (interface{}, error) {
 	repo := parts[1]
 	fmt.Println(regURL, repo, tag)
 
+	if regURL == "docker.io" {
+		regURL = "https://registry-1.docker.io"
+	} else {
+		if u2, e2 := url.Parse(regURL); e2 == nil {
+			if u2.Scheme == "" {
+				u2.Scheme = "https"
+			}
+			regURL = u2.String()
+		}
+	}
+	
 	keyring, err := credentialprovider.MakeDockerKeyring(pullSecrets, credentialprovider.NewDockerKeyring())
 	if err != nil {
 		return nil, err
@@ -103,7 +115,7 @@ func PullImage(img string, pullSecrets []v1.Secret) (interface{}, error) {
 	creds, withCredentials := keyring.Lookup(repoToPull)
 	if !withCredentials {
 		glog.V(3).Infof("Pulling image %q without credentials", img)
-		return PullManifest(repo, tag, &AuthConfig{})
+		return PullManifest(repo, tag, &AuthConfig{ServerAddress: regURL})
 	}
 
 	var pullErrs []error
@@ -114,6 +126,9 @@ func PullImage(img string, pullSecrets []v1.Secret) (interface{}, error) {
 			Password:      authConfig.Password,
 			Auth:          authConfig.Auth,
 			ServerAddress: authConfig.ServerAddress,
+		}
+		if auth.ServerAddress == "" {
+			auth.ServerAddress = regURL
 		}
 
 		mf, err := PullManifest(repo, tag, auth)
