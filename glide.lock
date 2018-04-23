@@ -1,16 +1,11 @@
-hash: e645979f72b130712d7fe763792ab659fd4db670de06b2ee4fab9f1914188512
-updated: 2018-04-23T07:54:36.88483402-07:00
+hash: 401fccc3f1a878fe0d25e999b97bbbe5f4915810eea9df7d64bccefd7bb401ff
+updated: 2018-04-23T13:30:34.102119388-07:00
 imports:
 - name: cloud.google.com/go
   version: 3b1ae45394a234c385be014e9a488f2bb6eef821
   subpackages:
   - compute/metadata
   - internal
-- name: github.com/appscode/go
-  version: 9ff183cbae833dbc9bd2da81eebfc71289e86605
-  subpackages:
-  - context
-  - log
 - name: github.com/aws/aws-sdk-go
   version: 760741802ad40f49ae9fc4a69ef6706d2527d62e
   subpackages:
@@ -162,8 +157,6 @@ imports:
   version: 7d79101e329e5a3adf994758c578dab82b90c017
 - name: github.com/google/gofuzz
   version: 44d81051d367757e1c7c6a5a86423ece9afcf63c
-- name: github.com/google/uuid
-  version: dec09d789f3dba190787f8b4454c7d3c936fed9e
 - name: github.com/googleapis/gnostic
   version: 0c5108395e2debce0d731cf0287ddf7242066aba
   subpackages:
@@ -221,8 +214,6 @@ imports:
   - specs-go/v1
 - name: github.com/peterbourgon/diskv
   version: 5f041e8faa004a95c88a202771f4cc3e991971e6
-- name: github.com/pkg/errors
-  version: 645ef00459ed84a119197bfb8d8205042c6df63d
 - name: github.com/prometheus/client_golang
   version: e7e903064f5e9eb5da98208bae10b475d4db0f8c
   subpackages:
@@ -537,7 +528,8 @@ imports:
   - pkg/common
   - pkg/util/proto
 - name: k8s.io/kubernetes
-  version: 925c127ec6b946659ad0fd596fa959be43f0cc05
+  version: e2f08b833aa10ad8f90688d64c8683859f1c9628
+  repo: https://github.com/appscode/kubernetes
   subpackages:
   - pkg/api/legacyscheme
   - pkg/api/service

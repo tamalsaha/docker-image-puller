@@ -9,7 +9,8 @@ import:
 - package: k8s.io/client-go
   version: v6.0.0
 - package: k8s.io/kubernetes
-  version: v1.9.0
+  repo: https://github.com/appscode/kubernetes
+  version: v1.9.0-ac
 - package: k8s.io/kube-openapi
 - package: github.com/heroku/docker-registry-client
   repo: https://github.com/appscode/docker-registry-client
