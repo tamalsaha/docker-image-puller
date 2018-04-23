@@ -10,7 +10,6 @@ import (
 	_ "k8s.io/kubernetes/pkg/credentialprovider/aws"
 	_ "k8s.io/kubernetes/pkg/credentialprovider/azure"
 	_ "k8s.io/kubernetes/pkg/credentialprovider/gcp"
-	"github.com/appscode/go/log"
 	manifestV1 "github.com/docker/distribution/manifest/schema1"
 	manifestV2 "github.com/docker/distribution/manifest/schema2"
 	"github.com/golang/glog"
@@ -39,14 +38,14 @@ func main() {
 
 	config, err := clientcmd.BuildConfigFromFlags(*masterURL, *kubeconfigPath)
 	if err != nil {
-		log.Fatalf("Could not get Kubernetes config: %s", err)
+		glog.Fatalf("Could not get Kubernetes config: %s", err)
 	}
 
 	kc := kubernetes.NewForConfigOrDie(config)
 
 	secrets, err := kc.CoreV1().Secrets(metav1.NamespaceAll).List(metav1.ListOptions{})
 	if err != nil {
-		log.Fatalln(err)
+		glog.Fatalln(err)
 	}
 
 	var pullSecrets []v1.Secret
@@ -58,7 +57,7 @@ func main() {
 
 	mf2, err := PullImage(*img, pullSecrets)
 	if err != nil {
-		log.Fatalln(err)
+		glog.Fatalln(err)
 	}
 	switch manifest := mf2.(type) {
 	case *manifestV2.DeserializedManifest:
