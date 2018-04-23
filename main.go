@@ -89,9 +89,7 @@ func PullImage(img string, pullSecrets []v1.Secret) (string, error) {
 		glog.V(3).Infof("Pulling image %q without credentials", img)
 
 		fmt.Printf("Pull image %q auth %v", img, nil)
-		mf, err := PullManifest(repo, tag, &AuthConfig{
-			ServerAddress: "https://registry-1.docker.io",
-		})
+		mf, err := PullManifest(repo, tag, &AuthConfig{})
 		fmt.Println(mf, err)
 		return "imageRef", nil
 	}
@@ -116,6 +114,10 @@ func PullImage(img string, pullSecrets []v1.Secret) (string, error) {
 }
 
 func PullManifest(repo, tag string, auth *AuthConfig) (interface{}, error) {
+	if auth.ServerAddress == "" {
+		auth.ServerAddress = "https://registry-1.docker.io"
+	}
+
 	hub := &reg.Registry{
 		URL: auth.ServerAddress,
 		Client: &http.Client{
