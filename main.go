@@ -34,7 +34,7 @@ import (
 // nginx
 // gcr.io/tigerworks-kube/glusterd:3.7-3
 func main() {
-	img := flag.String("image", "", "Name of docker image as used in a Kubernetes container")
+	img := flag.String("image", "tigerworks/labels", "Name of docker image as used in a Kubernetes container")
 	masterURL := flag.String("master", "", "The address of the Kubernetes API server (overrides any value in kubeconfig)")
 	kubeconfigPath := flag.String("kubeconfig", filepath.Join(homedir.HomeDir(), ".kube/config"), "Path to kubeconfig file")
 	flag.Parse()
@@ -86,8 +86,8 @@ func PullImage(img string, pullSecrets []v1.Secret) (interface{}, error) {
 	repo := parts[1]
 	fmt.Println(regURL, repo, tag)
 
-	if strings.HasPrefix(regURL, "docker.io") {
-		regURL = "registry-1." + regURL
+	if strings.HasPrefix(regURL, "docker.io") || strings.HasPrefix(regURL, "index.docker.io") {
+		regURL = "registry-1.docker.io"
 	}
 	if !strings.HasPrefix(regURL, "https://") && !strings.HasPrefix(regURL, "http://") {
 		regURL = "https://" + regURL
