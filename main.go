@@ -3,13 +3,21 @@ package main
 import (
 	"fmt"
 	"path/filepath"
+
+	manifestV1 "github.com/docker/distribution/manifest/schema1"
+	manifestV2 "github.com/docker/distribution/manifest/schema2"
+	reg "github.com/heroku/docker-registry-client/registry"
 	// Credential providers
 	_ "k8s.io/kubernetes/pkg/credentialprovider/aws"
 	_ "k8s.io/kubernetes/pkg/credentialprovider/azure"
 	_ "k8s.io/kubernetes/pkg/credentialprovider/gcp"
 	// _ "k8s.io/kubernetes/pkg/credentialprovider/rancher"
+	"net/http"
+	"strings"
+
 	"github.com/appscode/go/log"
 	"github.com/golang/glog"
+	"github.com/pkg/errors"
 	"github.com/tamalsaha/go-oneliners"
 	"k8s.io/api/core/v1"
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
@@ -18,7 +26,6 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/util/homedir"
 	"k8s.io/kubernetes/pkg/credentialprovider"
-	runtimeapi "k8s.io/kubernetes/pkg/kubelet/apis/cri/v1alpha1/runtime"
 	"k8s.io/kubernetes/pkg/util/parsers"
 )
 
@@ -51,31 +58,35 @@ func main() {
 
 // PullImage pulls an image from the network to local storage using the supplied secrets if necessary.
 func PullImage(img string, pullSecrets []v1.Secret) (string, error) {
-	repoToPull, _, _, err := parsers.ParseImageName(img)
+	repoToPull, tag, _, err := parsers.ParseImageName(img)
 	if err != nil {
 		return "", err
 	}
+
+	parts := strings.SplitN(repoToPull, "/", 2)
+	regURL := parts[0]
+	repo := parts[1]
+	fmt.Println(regURL, repo, tag)
 
 	keyring, err := credentialprovider.MakeDockerKeyring(pullSecrets, credentialprovider.NewDockerKeyring())
 	if err != nil {
 		return "", err
 	}
 
-	imgSpec := &runtimeapi.ImageSpec{Image: img}
 	creds, withCredentials := keyring.Lookup(repoToPull)
 	if !withCredentials {
 		glog.V(3).Infof("Pulling image %q without credentials", img)
 
-		var auth *runtimeapi.AuthConfig = nil
-		fmt.Printf("Pull image %q auth %v", img, auth)
-
+		fmt.Printf("Pull image %q auth %v", img, nil)
+		mf, err := PullManifest(repo, tag, nil)
+		fmt.Println(mf, err)
 		return "imageRef", nil
 	}
 
 	var pullErrs []error
 	for _, currentCreds := range creds {
 		authConfig := credentialprovider.LazyProvide(currentCreds)
-		auth := &runtimeapi.AuthConfig{
+		auth := &AuthConfig{
 			Username:      authConfig.Username,
 			Password:      authConfig.Password,
 			Auth:          authConfig.Auth,
@@ -84,9 +95,46 @@ func PullImage(img string, pullSecrets []v1.Secret) (string, error) {
 			RegistryToken: authConfig.RegistryToken,
 		}
 
-		fmt.Println(imgSpec, auth)
+		mf, err := PullManifest(repo, tag, auth)
+		fmt.Println(mf, err)
+
 		// pullErrs = append(pullErrs, err)
 	}
 
 	return "", utilerrors.NewAggregate(pullErrs)
+}
+
+func PullManifest(repo, tag string, auth *AuthConfig) (interface{}, error) {
+	hub := &reg.Registry{
+		URL: auth.ServerAddress,
+		Client: &http.Client{
+			Transport: reg.WrapTransport(http.DefaultTransport, auth.ServerAddress, auth.Username, auth.Password),
+		},
+		Logf: reg.Log,
+	}
+	mx, err := hub.ManifestVx(repo, tag)
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to retrieve manifest for image %s:%s", repo, tag)
+	}
+
+	switch manifest := mx.(type) {
+	case *manifestV2.DeserializedManifest:
+		fmt.Println(manifest)
+	case *manifestV1.SignedManifest:
+		fmt.Println(manifest)
+	}
+	return nil, errors.New("unknown manifest type")
+}
+
+// AuthConfig contains authorization information for connecting to a registry.
+type AuthConfig struct {
+	Username      string
+	Password      string
+	Auth          string
+	ServerAddress string
+	// IdentityToken is used to authenticate the user and get
+	// an access token for the registry.
+	IdentityToken string
+	// RegistryToken is a bearer token to be sent to a registry
+	RegistryToken string
 }
