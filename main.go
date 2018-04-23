@@ -106,7 +106,7 @@ func PullImage(img string, pullSecrets []v1.Secret) (interface{}, error) {
 			regURL = u2.String()
 		}
 	}
-	
+
 	keyring, err := credentialprovider.MakeDockerKeyring(pullSecrets, credentialprovider.NewDockerKeyring())
 	if err != nil {
 		return nil, err
