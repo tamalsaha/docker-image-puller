@@ -25,25 +25,19 @@ import (
 	"k8s.io/kubernetes/pkg/util/parsers"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"net/url"
+	"flag"
 )
 
+// k8s.gcr.io/kube-proxy-amd64:v1.10.0
+// nginx
+// gcloud docker -- pull gcr.io/tigerworks-kube/glusterd:3.7-3
 func main() {
-	//x, y, z, err := parsers.ParseImageName("nginx")
-	//fmt.Println("x = ", x)
-	//fmt.Println("y = ", y)
-	//fmt.Println("z = ", z)
-	//fmt.Println("err = ", err)
+	img := flag.String("image", "", "Name of docker image as used in a Kubernetes container")
+	masterURL := flag.String("master", "", "The address of the Kubernetes API server (overrides any value in kubeconfig)")
+	kubeconfigPath := flag.String("kubeconfig", filepath.Join(homedir.HomeDir(), ".kube/config"), "Path to kubeconfig file")
+	flag.Parse()
 
-	x, y, z, err := parsers.ParseImageName("k8s.gcr.io/kube-proxy-amd64:v1.10.0")
-	fmt.Println("x = ", x)
-	fmt.Println("y = ", y)
-	fmt.Println("z = ", z)
-	fmt.Println("err = ", err)
-
-	masterURL := ""
-	kubeconfigPath := filepath.Join(homedir.HomeDir(), ".kube/config")
-
-	config, err := clientcmd.BuildConfigFromFlags(masterURL, kubeconfigPath)
+	config, err := clientcmd.BuildConfigFromFlags(*masterURL, *kubeconfigPath)
 	if err != nil {
 		log.Fatalf("Could not get Kubernetes config: %s", err)
 	}
@@ -62,23 +56,17 @@ func main() {
 		}
 	}
 
-	//mf1, err := PullImage("nginx", pullSecrets)
-	//if err != nil {
-	//	log.Fatalln(err)
-	//}
-	//switch manifest := mf1.(type) {
-	//case *manifestV2.DeserializedManifest:
-	//	fmt.Println("nginx", manifest.Config.Digest)
-	//case *manifestV1.SignedManifest:
-	//	fmt.Println("nginx", manifest.Name)
-	//}
-
-	mf2, err := PullImage("k8s.gcr.io/kube-proxy-amd64:v1.10.0", pullSecrets)
+	mf2, err := PullImage(*img, pullSecrets)
+	if err != nil {
+		log.Fatalln(err)
+	}
 	switch manifest := mf2.(type) {
 	case *manifestV2.DeserializedManifest:
-		fmt.Println("k8s.gcr.io/kube-proxy-amd64:v1.10.0", manifest.Config.Digest)
+		data, _ := manifest.MarshalJSON()
+		fmt.Println("V2 Manifest:", string(data))
 	case *manifestV1.SignedManifest:
-		fmt.Println("k8s.gcr.io/kube-proxy-amd64:v1.10.0", manifest.Name)
+		data, _ := manifest.MarshalJSON()
+		fmt.Println("V1 Manifest:", string(data))
 	}
 }
 
