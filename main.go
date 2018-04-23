@@ -5,31 +5,34 @@ import (
 	"net/http"
 	"path/filepath"
 	"strings"
+
+	"flag"
+	"net/url"
+
 	core "k8s.io/api/core/v1"
-	// Credential providers
-	_ "k8s.io/kubernetes/pkg/credentialprovider/aws"
-	_ "k8s.io/kubernetes/pkg/credentialprovider/azure"
-	_ "k8s.io/kubernetes/pkg/credentialprovider/gcp"
+
 	manifestV1 "github.com/docker/distribution/manifest/schema1"
 	manifestV2 "github.com/docker/distribution/manifest/schema2"
 	"github.com/golang/glog"
 	reg "github.com/heroku/docker-registry-client/registry"
 	"k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/client-go/kubernetes"
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/util/homedir"
 	"k8s.io/kubernetes/pkg/credentialprovider"
+	// Credential providers
+	_ "k8s.io/kubernetes/pkg/credentialprovider/aws"
+	_ "k8s.io/kubernetes/pkg/credentialprovider/azure"
+	_ "k8s.io/kubernetes/pkg/credentialprovider/gcp"
 	"k8s.io/kubernetes/pkg/util/parsers"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"net/url"
-	"flag"
 )
 
 // k8s.gcr.io/kube-proxy-amd64:v1.10.0
 // nginx
-// gcloud docker -- pull gcr.io/tigerworks-kube/glusterd:3.7-3
+// gcr.io/tigerworks-kube/glusterd:3.7-3
 func main() {
 	img := flag.String("image", "", "Name of docker image as used in a Kubernetes container")
 	masterURL := flag.String("master", "", "The address of the Kubernetes API server (overrides any value in kubeconfig)")
@@ -83,15 +86,15 @@ func PullImage(img string, pullSecrets []v1.Secret) (interface{}, error) {
 	repo := parts[1]
 	fmt.Println(regURL, repo, tag)
 
-	if regURL == "docker.io" {
-		regURL = "https://registry-1.docker.io"
-	} else {
-		if u2, e2 := url.Parse(regURL); e2 == nil {
-			if u2.Scheme == "" {
-				u2.Scheme = "https"
-			}
-			regURL = u2.String()
-		}
+	if strings.HasPrefix(regURL, "docker.io") {
+		regURL = "registry-1." + regURL
+	}
+	if !strings.HasPrefix(regURL, "https://") && !strings.HasPrefix(regURL, "http://") {
+		regURL = "https://" + regURL
+	}
+	_, err = url.Parse(regURL)
+	if err != nil {
+		return nil, err
 	}
 
 	keyring, err := credentialprovider.MakeDockerKeyring(pullSecrets, credentialprovider.NewDockerKeyring())
