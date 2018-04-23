@@ -62,16 +62,33 @@ func main() {
 		}
 	}
 
-	PullImage("nginx", pullSecrets)
+	mf1, err := PullImage("nginx", pullSecrets)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	switch manifest := mf1.(type) {
+	case *manifestV2.DeserializedManifest:
+		fmt.Println("nginx", manifest.Config.Digest)
+	case *manifestV1.SignedManifest:
+		fmt.Println("nginx", manifest.Name)
+	}
+
+	mf2, err := PullImage("k8s.gcr.io/kube-proxy-amd64:v1.10.0", pullSecrets)
+	switch manifest := mf2.(type) {
+	case *manifestV2.DeserializedManifest:
+		fmt.Println("k8s.gcr.io/kube-proxy-amd64:v1.10.0", manifest.Config.Digest)
+	case *manifestV1.SignedManifest:
+		fmt.Println("k8s.gcr.io/kube-proxy-amd64:v1.10.0", manifest.Name)
+	}
 }
 
 // ref: https://github.com/kubernetes/kubernetes/blob/release-1.9/pkg/kubelet/kuberuntime/kuberuntime_image.go#L29
 
 // PullImage pulls an image from the network to local storage using the supplied secrets if necessary.
-func PullImage(img string, pullSecrets []v1.Secret) (string, error) {
+func PullImage(img string, pullSecrets []v1.Secret) (interface{}, error) {
 	repoToPull, tag, _, err := parsers.ParseImageName(img)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	parts := strings.SplitN(repoToPull, "/", 2)
@@ -81,17 +98,13 @@ func PullImage(img string, pullSecrets []v1.Secret) (string, error) {
 
 	keyring, err := credentialprovider.MakeDockerKeyring(pullSecrets, credentialprovider.NewDockerKeyring())
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	creds, withCredentials := keyring.Lookup(repoToPull)
 	if !withCredentials {
 		glog.V(3).Infof("Pulling image %q without credentials", img)
-
-		fmt.Printf("Pull image %q auth %v", img, nil)
-		mf, err := PullManifest(repo, tag, &AuthConfig{})
-		fmt.Println(mf, err)
-		return "imageRef", nil
+		return PullManifest(repo, tag, &AuthConfig{})
 	}
 
 	var pullErrs []error
@@ -105,12 +118,12 @@ func PullImage(img string, pullSecrets []v1.Secret) (string, error) {
 		}
 
 		mf, err := PullManifest(repo, tag, auth)
-		fmt.Println(mf, err)
-
-		// pullErrs = append(pullErrs, err)
+		if err == nil {
+			return mf, nil
+		}
+		pullErrs = append(pullErrs, err)
 	}
-
-	return "", utilerrors.NewAggregate(pullErrs)
+	return nil, utilerrors.NewAggregate(pullErrs)
 }
 
 func PullManifest(repo, tag string, auth *AuthConfig) (interface{}, error) {
