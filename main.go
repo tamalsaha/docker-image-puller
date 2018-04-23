@@ -15,7 +15,6 @@ import (
 	manifestV2 "github.com/docker/distribution/manifest/schema2"
 	"github.com/golang/glog"
 	reg "github.com/heroku/docker-registry-client/registry"
-	"github.com/pkg/errors"
 	"k8s.io/api/core/v1"
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/client-go/kubernetes"
@@ -138,18 +137,7 @@ func PullManifest(repo, tag string, auth *AuthConfig) (interface{}, error) {
 		},
 		Logf: reg.Log,
 	}
-	mx, err := hub.ManifestVx(repo, tag)
-	if err != nil {
-		return nil, errors.Wrapf(err, "failed to retrieve manifest for image %s:%s", repo, tag)
-	}
-
-	switch manifest := mx.(type) {
-	case *manifestV2.DeserializedManifest:
-		fmt.Println(manifest)
-	case *manifestV1.SignedManifest:
-		fmt.Println(manifest)
-	}
-	return nil, errors.New("unknown manifest type")
+	return hub.ManifestVx(repo, tag)
 }
 
 // AuthConfig contains authorization information for connecting to a registry.
