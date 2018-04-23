@@ -47,6 +47,8 @@ func main() {
 	oneliners.FILE(kc.CoreV1().Nodes())
 }
 
+// ref: https://github.com/kubernetes/kubernetes/blob/release-1.9/pkg/kubelet/kuberuntime/kuberuntime_image.go#L29
+
 // PullImage pulls an image from the network to local storage using the supplied secrets if necessary.
 func PullImage(img string, pullSecrets []v1.Secret) (string, error) {
 	repoToPull, _, _, err := parsers.ParseImageName(img)
