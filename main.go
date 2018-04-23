@@ -2,23 +2,20 @@ package main
 
 import (
 	"fmt"
+	"net/http"
 	"path/filepath"
-
-	manifestV1 "github.com/docker/distribution/manifest/schema1"
-	manifestV2 "github.com/docker/distribution/manifest/schema2"
-	reg "github.com/heroku/docker-registry-client/registry"
+	"strings"
+	core "k8s.io/api/core/v1"
 	// Credential providers
 	_ "k8s.io/kubernetes/pkg/credentialprovider/aws"
 	_ "k8s.io/kubernetes/pkg/credentialprovider/azure"
 	_ "k8s.io/kubernetes/pkg/credentialprovider/gcp"
-	// _ "k8s.io/kubernetes/pkg/credentialprovider/rancher"
-	"net/http"
-	"strings"
-
 	"github.com/appscode/go/log"
+	manifestV1 "github.com/docker/distribution/manifest/schema1"
+	manifestV2 "github.com/docker/distribution/manifest/schema2"
 	"github.com/golang/glog"
+	reg "github.com/heroku/docker-registry-client/registry"
 	"github.com/pkg/errors"
-	"github.com/tamalsaha/go-oneliners"
 	"k8s.io/api/core/v1"
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/client-go/kubernetes"
@@ -27,6 +24,7 @@ import (
 	"k8s.io/client-go/util/homedir"
 	"k8s.io/kubernetes/pkg/credentialprovider"
 	"k8s.io/kubernetes/pkg/util/parsers"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 func main() {
@@ -51,7 +49,20 @@ func main() {
 	}
 
 	kc := kubernetes.NewForConfigOrDie(config)
-	oneliners.FILE(kc.CoreV1().Nodes())
+
+	secrets, err := kc.CoreV1().Secrets(metav1.NamespaceAll).List(metav1.ListOptions{})
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	var pullSecrets []v1.Secret
+	for _, sec := range secrets.Items {
+		if sec.Type == core.SecretTypeDockerConfigJson || sec.Type == core.SecretTypeDockercfg {
+			pullSecrets = append(pullSecrets, sec)
+		}
+	}
+
+	PullImage("nginx", pullSecrets)
 }
 
 // ref: https://github.com/kubernetes/kubernetes/blob/release-1.9/pkg/kubelet/kuberuntime/kuberuntime_image.go#L29
@@ -78,7 +89,9 @@ func PullImage(img string, pullSecrets []v1.Secret) (string, error) {
 		glog.V(3).Infof("Pulling image %q without credentials", img)
 
 		fmt.Printf("Pull image %q auth %v", img, nil)
-		mf, err := PullManifest(repo, tag, nil)
+		mf, err := PullManifest(repo, tag, &AuthConfig{
+			ServerAddress: "https://registry-1.docker.io",
+		})
 		fmt.Println(mf, err)
 		return "imageRef", nil
 	}
@@ -91,8 +104,6 @@ func PullImage(img string, pullSecrets []v1.Secret) (string, error) {
 			Password:      authConfig.Password,
 			Auth:          authConfig.Auth,
 			ServerAddress: authConfig.ServerAddress,
-			IdentityToken: authConfig.IdentityToken,
-			RegistryToken: authConfig.RegistryToken,
 		}
 
 		mf, err := PullManifest(repo, tag, auth)
@@ -132,9 +143,4 @@ type AuthConfig struct {
 	Password      string
 	Auth          string
 	ServerAddress string
-	// IdentityToken is used to authenticate the user and get
-	// an access token for the registry.
-	IdentityToken string
-	// RegistryToken is a bearer token to be sent to a registry
-	RegistryToken string
 }
