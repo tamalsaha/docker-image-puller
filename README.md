@@ -3,7 +3,7 @@
 ```console
 $ go run main.go -image tigerworks/labels
 
-$ kubectl run nginx --image=appscode/searchlight-plugin-go
+$ kubectl run image-puller --image=appscode/docker-image-puller
 ```
 
 
