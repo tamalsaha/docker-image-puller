@@ -37,9 +37,10 @@ import (
 // tigerworks/labels
 // k8s.gcr.io/kube-proxy-amd64:v1.10.0
 // gcr.io/tigerworks-kube/docker-image-puller:latest
+// appscode/docker-image-puller@sha256:a54f1be7edda4305e59544ef4014494206245be08422258d6677ff273223c5a8
 func main() {
 	var (
-		img            string = "gcr.io/tigerworks-kube/docker-image-puller:latest"
+		img            string = "appscode/docker-image-puller@sha256:a54f1be7edda4305e59544ef4014494206245be08422258d6677ff273223c5a8"
 		masterURL      string
 		kubeconfigPath string
 	)
@@ -89,7 +90,7 @@ func main() {
 
 // PullImage pulls an image from the network to local storage using the supplied secrets if necessary.
 func PullImage(img string, pullSecrets []v1.Secret) (interface{}, error) {
-	repoToPull, tag, _, err := parsers.ParseImageName(img)
+	repoToPull, tag, digest, err := parsers.ParseImageName(img)
 	if err != nil {
 		return nil, err
 	}
@@ -97,7 +98,11 @@ func PullImage(img string, pullSecrets []v1.Secret) (interface{}, error) {
 	parts := strings.SplitN(repoToPull, "/", 2)
 	regURL := parts[0]
 	repo := parts[1]
-	fmt.Println(regURL, repo, tag)
+	fmt.Println(regURL, repo, tag, digest)
+	ref := tag
+	if ref == "" {
+		ref = digest
+	}
 
 	if strings.HasPrefix(regURL, "docker.io") || strings.HasPrefix(regURL, "index.docker.io") {
 		regURL = "registry-1.docker.io"
@@ -118,7 +123,7 @@ func PullImage(img string, pullSecrets []v1.Secret) (interface{}, error) {
 	creds, withCredentials := keyring.Lookup(repoToPull)
 	if !withCredentials {
 		glog.V(3).Infof("Pulling image %q without credentials", img)
-		return PullManifest(repo, tag, &AuthConfig{ServerAddress: regURL})
+		return PullManifest(repo, ref, &AuthConfig{ServerAddress: regURL})
 	}
 
 	var pullErrs []error
@@ -134,7 +139,7 @@ func PullImage(img string, pullSecrets []v1.Secret) (interface{}, error) {
 			auth.ServerAddress = regURL
 		}
 
-		mf, err := PullManifest(repo, tag, auth)
+		mf, err := PullManifest(repo, ref, auth)
 		if err == nil {
 			return mf, nil
 		}
@@ -143,7 +148,7 @@ func PullImage(img string, pullSecrets []v1.Secret) (interface{}, error) {
 	return nil, utilerrors.NewAggregate(pullErrs)
 }
 
-func PullManifest(repo, tag string, auth *AuthConfig) (interface{}, error) {
+func PullManifest(repo, ref string, auth *AuthConfig) (interface{}, error) {
 	hub := &reg.Registry{
 		URL: auth.ServerAddress,
 		Client: &http.Client{
@@ -151,7 +156,7 @@ func PullManifest(repo, tag string, auth *AuthConfig) (interface{}, error) {
 		},
 		Logf: reg.Log,
 	}
-	return hub.ManifestVx(repo, tag)
+	return hub.ManifestVx(repo, ref)
 }
 
 // AuthConfig contains authorization information for connecting to a registry.
