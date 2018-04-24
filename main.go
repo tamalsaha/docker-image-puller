@@ -31,12 +31,14 @@ import (
 	"k8s.io/kubernetes/pkg/util/parsers"
 )
 
-// k8s.gcr.io/kube-proxy-amd64:v1.10.0
 // nginx
-// gcr.io/tigerworks-kube/glusterd:3.7-3
+// appscode/voyager:6.0.0
+// tigerworks/labels
+// k8s.gcr.io/kube-proxy-amd64:v1.10.0
+// gcr.io/tigerworks-kube/docker-image-puller:latest
 func main() {
 	var (
-		img            string
+		img            string = "gcr.io/tigerworks-kube/docker-image-puller:latest"
 		masterURL      string
 		kubeconfigPath string
 	)
@@ -44,7 +46,7 @@ func main() {
 		kubeconfigPath = filepath.Join(homedir.HomeDir(), ".kube/config")
 	}
 
-	flag.StringVar(&img, "image", "tigerworks/labels", "Name of docker image as used in a Kubernetes container")
+	flag.StringVar(&img, "image", img, "Name of docker image as used in a Kubernetes container")
 	flag.StringVar(&masterURL, "master", "", "The address of the Kubernetes API server (overrides any value in kubeconfig)")
 	flag.StringVar(&kubeconfigPath, "kubeconfig", kubeconfigPath, "Path to kubeconfig file")
 	flag.Parse()
