@@ -24,6 +24,7 @@ import (
 	"k8s.io/client-go/util/homedir"
 	"k8s.io/kubernetes/pkg/credentialprovider"
 	// Credential providers
+	"github.com/appscode/kutil/meta"
 	_ "k8s.io/kubernetes/pkg/credentialprovider/aws"
 	_ "k8s.io/kubernetes/pkg/credentialprovider/azure"
 	_ "k8s.io/kubernetes/pkg/credentialprovider/gcp"
@@ -34,12 +35,21 @@ import (
 // nginx
 // gcr.io/tigerworks-kube/glusterd:3.7-3
 func main() {
-	img := flag.String("image", "tigerworks/labels", "Name of docker image as used in a Kubernetes container")
-	masterURL := flag.String("master", "", "The address of the Kubernetes API server (overrides any value in kubeconfig)")
-	kubeconfigPath := flag.String("kubeconfig", filepath.Join(homedir.HomeDir(), ".kube/config"), "Path to kubeconfig file")
+	var (
+		img            string
+		masterURL      string
+		kubeconfigPath string
+	)
+	if !meta.PossiblyInCluster() {
+		kubeconfigPath = filepath.Join(homedir.HomeDir(), ".kube/config")
+	}
+
+	flag.StringVar(&img, "image", "tigerworks/labels", "Name of docker image as used in a Kubernetes container")
+	flag.StringVar(&masterURL, "master", "", "The address of the Kubernetes API server (overrides any value in kubeconfig)")
+	flag.StringVar(&kubeconfigPath, "kubeconfig", kubeconfigPath, "Path to kubeconfig file")
 	flag.Parse()
 
-	config, err := clientcmd.BuildConfigFromFlags(*masterURL, *kubeconfigPath)
+	config, err := clientcmd.BuildConfigFromFlags(masterURL, kubeconfigPath)
 	if err != nil {
 		glog.Fatalf("Could not get Kubernetes config: %s", err)
 	}
@@ -58,7 +68,7 @@ func main() {
 		}
 	}
 
-	mf2, err := PullImage(*img, pullSecrets)
+	mf2, err := PullImage(img, pullSecrets)
 	if err != nil {
 		glog.Fatalln(err)
 	}
