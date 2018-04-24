@@ -15,3 +15,4 @@ $ kubectl run image-puller --image=appscode/docker-image-puller --serviceaccount
 ## Docs
 - https://kubernetes.io/docs/concepts/containers/images/#updating-images
 - https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+- https://github.com/optiopay/klar#amazon-ecr-support
