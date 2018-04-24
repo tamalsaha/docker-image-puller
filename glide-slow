@@ -5,7 +5,7 @@
 # - ???
 # - Profit
 
-pushd $GOPATH/src/github.com/tamalsaha/docker-demo
+pushd $GOPATH/src/github.com/tamalsaha/docker-image-puller
 
 glide up -v
 glide vc --use-lock-file --only-code --no-tests
