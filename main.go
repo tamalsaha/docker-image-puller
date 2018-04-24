@@ -28,7 +28,7 @@ import (
 	_ "k8s.io/kubernetes/pkg/credentialprovider/aws"
 	_ "k8s.io/kubernetes/pkg/credentialprovider/azure"
 	_ "k8s.io/kubernetes/pkg/credentialprovider/gcp"
-	// _ "k8s.io/kubernetes/pkg/credentialprovider/rancher"
+	// _ "k8s.io/kubernetes/pkg/credentialprovider/rancher" // enable in Kube 1.10
 	"k8s.io/kubernetes/pkg/util/parsers"
 )
 
@@ -144,10 +144,6 @@ func PullImage(img string, pullSecrets []v1.Secret) (interface{}, error) {
 }
 
 func PullManifest(repo, tag string, auth *AuthConfig) (interface{}, error) {
-	if auth.ServerAddress == "" {
-		auth.ServerAddress = "https://registry-1.docker.io"
-	}
-
 	hub := &reg.Registry{
 		URL: auth.ServerAddress,
 		Client: &http.Client{
