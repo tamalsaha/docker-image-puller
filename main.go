@@ -28,6 +28,7 @@ import (
 	_ "k8s.io/kubernetes/pkg/credentialprovider/aws"
 	_ "k8s.io/kubernetes/pkg/credentialprovider/azure"
 	_ "k8s.io/kubernetes/pkg/credentialprovider/gcp"
+	// _ "k8s.io/kubernetes/pkg/credentialprovider/rancher"
 	"k8s.io/kubernetes/pkg/util/parsers"
 )
 
