@@ -1,11 +1,17 @@
 hash: 401fccc3f1a878fe0d25e999b97bbbe5f4915810eea9df7d64bccefd7bb401ff
-updated: 2018-04-23T13:30:34.102119388-07:00
+updated: 2018-04-23T17:18:03.423055818-07:00
 imports:
 - name: cloud.google.com/go
   version: 3b1ae45394a234c385be014e9a488f2bb6eef821
   subpackages:
   - compute/metadata
   - internal
+- name: github.com/appscode/jsonpatch
+  version: 58a38a46ddb591a543c6b1003213353e29331c5a
+- name: github.com/appscode/kutil
+  version: 79e0b55a4f51d46d9d9837dac442623bd1c9ae27
+  subpackages:
+  - meta
 - name: github.com/aws/aws-sdk-go
   version: 760741802ad40f49ae9fc4a69ef6706d2527d62e
   subpackages:
@@ -122,6 +128,8 @@ imports:
   version: ff4f55a206334ef123e4f79bbf348980da81ca46
   subpackages:
   - log
+- name: github.com/evanphx/json-patch
+  version: 944e07253867aacae43c04b2e6a239005443f33a
 - name: github.com/ghodss/yaml
   version: 73d445a93680fa1a78ae23a5839bad48f32ba1ee
 - name: github.com/go-ini/ini
@@ -155,6 +163,13 @@ imports:
   - ptypes/timestamp
 - name: github.com/google/btree
   version: 7d79101e329e5a3adf994758c578dab82b90c017
+- name: github.com/google/go-cmp
+  version: 5411ab924f9ffa6566244a9e504bc347edacffd3
+  subpackages:
+  - cmp
+  - cmp/internal/diff
+  - cmp/internal/function
+  - cmp/internal/value
 - name: github.com/google/gofuzz
   version: 44d81051d367757e1c7c6a5a86423ece9afcf63c
 - name: github.com/googleapis/gnostic
@@ -243,10 +258,20 @@ imports:
   - vhd
 - name: github.com/satori/uuid
   version: 5bf94b69c6b68ee1b541973bb8e1144db23a194b
+- name: github.com/sergi/go-diff
+  version: 97b2266dfe4bd4ea1b81a463322f04f8b724801e
+  subpackages:
+  - diffmatchpatch
 - name: github.com/sirupsen/logrus
   version: f006c2ac4710855cf0f916dd6b77acf6b048dc6e
 - name: github.com/spf13/pflag
   version: 9ff6c6923cfffbcd502984b8e0c80539a94968b7
+- name: github.com/yudai/gojsondiff
+  version: 7b1b7adf999dab73a6eb02669c3d82dbb27a3dd6
+  subpackages:
+  - formatter
+- name: github.com/yudai/golcs
+  version: d1c525dea8ce39ea9a783d33cf08932305373f2c
 - name: golang.org/x/crypto
   version: 81e90905daefcd6fd217b62423c0908922eadb30
   subpackages:
