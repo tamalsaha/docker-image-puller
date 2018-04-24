@@ -152,7 +152,7 @@ func PullManifest(repo, tag string, auth *AuthConfig) (interface{}, error) {
 		Client: &http.Client{
 			Transport: reg.WrapTransport(http.DefaultTransport, auth.ServerAddress, auth.Username, auth.Password),
 		},
-		Logf: reg.Quiet,
+		Logf: reg.Log,
 	}
 	return hub.ManifestVx(repo, tag)
 }
