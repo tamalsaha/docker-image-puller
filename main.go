@@ -30,7 +30,6 @@ import (
 	_ "k8s.io/kubernetes/pkg/credentialprovider/gcp"
 	// _ "k8s.io/kubernetes/pkg/credentialprovider/rancher" // enable in Kube 1.10
 	"k8s.io/kubernetes/pkg/util/parsers"
-	"io/ioutil"
 )
 
 // nginx
@@ -178,7 +177,9 @@ type logTransport struct {
 
 func (t *logTransport) RoundTrip(request *http.Request) (*http.Response, error) {
 	cmd, _ := http2curl.GetCurlCommand(request)
+	fmt.Println(cmd)
 	if glog.V(10) {
+		cmd, _ := http2curl.GetCurlCommand(request)
 		glog.Infoln("request:", cmd)
 	}
 	return t.Transport.RoundTrip(request)
