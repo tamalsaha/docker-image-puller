@@ -43,7 +43,7 @@ import (
 // "tigerworks/nginx:1.13"
 func main() {
 	var (
-		img            string = "appscode/voyager:6.0.0"
+		img            string = "tigerworks/nginx:1.13"
 		masterURL      string
 		kubeconfigPath string
 	)
