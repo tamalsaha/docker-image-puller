@@ -9,13 +9,13 @@ import (
 	"flag"
 	"net/url"
 
-	core "k8s.io/api/core/v1"
-	"github.com/moul/http2curl"
+	reg "github.com/appscode/docker-registry-client/registry"
 	manifestV1 "github.com/docker/distribution/manifest/schema1"
 	manifestV2 "github.com/docker/distribution/manifest/schema2"
 	"github.com/golang/glog"
-	reg "github.com/appscode/docker-registry-client/registry"
+	"github.com/moul/http2curl"
 	"k8s.io/api/core/v1"
+	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/client-go/kubernetes"
@@ -29,6 +29,8 @@ import (
 	_ "k8s.io/kubernetes/pkg/credentialprovider/azure"
 	_ "k8s.io/kubernetes/pkg/credentialprovider/gcp"
 	// _ "k8s.io/kubernetes/pkg/credentialprovider/rancher" // enable in Kube 1.10
+	"net/http/httputil"
+
 	"k8s.io/kubernetes/pkg/util/parsers"
 )
 
@@ -38,9 +40,10 @@ import (
 // k8s.gcr.io/kube-proxy-amd64:v1.10.0
 // gcr.io/tigerworks-kube/docker-image-puller:latest
 // appscode/docker-image-puller@sha256:a54f1be7edda4305e59544ef4014494206245be08422258d6677ff273223c5a8
+// "tigerworks/nginx:1.13"
 func main() {
 	var (
-		img            string = "tigerworks/nginx:1.13"
+		img            string = "appscode/voyager:6.0.0"
 		masterURL      string
 		kubeconfigPath string
 	)
@@ -168,7 +171,7 @@ type AuthConfig struct {
 }
 
 func CC(t http.RoundTripper) http.RoundTripper {
-	return &logTransport{Transport:t}
+	return &logTransport{Transport: t}
 }
 
 type logTransport struct {
@@ -182,5 +185,12 @@ func (t *logTransport) RoundTrip(request *http.Request) (*http.Response, error) 
 		cmd, _ := http2curl.GetCurlCommand(request)
 		glog.Infoln("request:", cmd)
 	}
-	return t.Transport.RoundTrip(request)
+	resp, err := t.Transport.RoundTrip(request)
+	if err == nil {
+		b, err := httputil.DumpResponse(resp, true)
+		if err == nil {
+			fmt.Println(string(b))
+		}
+	}
+	return resp, err
 }
